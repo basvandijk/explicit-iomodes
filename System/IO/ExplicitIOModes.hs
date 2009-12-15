@@ -139,7 +139,7 @@ module System.IO.ExplicitIOModes
 
     -- ** Special cases for standard input and output
 
-    -- | These functions are also exported by the "Prelude".
+    -- | These functions are also exported by the \"Prelude\".
 
     , SIO.interact
     , SIO.putChar
