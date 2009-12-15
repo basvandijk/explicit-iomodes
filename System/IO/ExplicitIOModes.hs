@@ -37,6 +37,7 @@ module System.IO.ExplicitIOModes
     , SIO.FilePath
 
     , Handle
+    , regularHandle
 
       -- ** IO Modes
 
@@ -182,11 +183,14 @@ import qualified System.IO as SIO
 -- | A handle to a file with an explicit IOMode.
 --
 -- Wraps: @System.IO.@'SIO.Handle'.
-newtype Handle ioMode = Handle { unHandle :: SIO.Handle }
+newtype Handle ioMode = Handle
+    { -- | Retrieves the regular @System.IO.@'SIO.Handle'.
+      regularHandle :: SIO.Handle
+    }
     deriving ( Show, Eq, Typeable )
 
 wrap :: (SIO.Handle -> a) -> (Handle ioMode -> a)
-wrap f = f . unHandle
+wrap f = f . regularHandle
 
 
 -- ** IO Modes
