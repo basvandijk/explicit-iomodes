@@ -1,4 +1,6 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -79,6 +81,7 @@ module System.IO.ExplicitIOModes
 
       -- ** Detecting the end of input
     , hIsEOF
+    , SIO.isEOF
 
       -- ** Buffering operations
     , SIO.BufferMode( SIO.NoBuffering, SIO.LineBuffering, SIO.BlockBuffering )
@@ -169,13 +172,31 @@ module System.IO.ExplicitIOModes
     , openBinaryTempFile
     ) where
 
-import Control.Monad       ( liftM, liftM2 )
+
+-- from base:
+import Prelude             ( Integer )
+import Control.Monad       ( return, (>>=), fail, liftM, liftM2 )
 import Control.Arrow       ( second )
 import Foreign.Ptr         ( Ptr )
+import Data.Eq             ( Eq, (==) )
+import Data.Ord            ( Ord, (<=) )
+import Data.Function       ( ($) )
+import Data.Bool           ( Bool(False, True) )
+import Data.Maybe          ( Maybe(Nothing, Just) )
+import Data.Int            ( Int )
+import Data.Char           ( Char, String )
 import Data.Typeable       ( Typeable )
-import Data.Tagged         ( Tagged(Tagged), unTagged )
+import Text.Show           ( Show, show )
+import System.IO           ( IO, FilePath )
 
 import qualified System.IO as SIO
+
+-- from base-unicode-symbols:
+import Data.Function.Unicode ( (∘) )
+import Data.Bool.Unicode     ( (∧) )
+
+-- from tagged:
+import Data.Tagged ( Tagged(Tagged), unTagged )
 
 
 -- * Files and handles
@@ -185,12 +206,12 @@ import qualified System.IO as SIO
 -- Wraps: @System.IO.@'SIO.Handle'.
 newtype Handle ioMode = Handle
     { -- | Retrieves the regular @System.IO.@'SIO.Handle'.
-      regularHandle :: SIO.Handle
+      regularHandle ∷ SIO.Handle
     }
     deriving ( Show, Eq, Typeable )
 
-wrap :: (SIO.Handle -> a) -> (Handle ioMode -> a)
-wrap f = f . regularHandle
+wrap ∷ (SIO.Handle → α) → (Handle ioMode → α)
+wrap f = f ∘ regularHandle
 
 
 -- ** IO Modes
@@ -221,28 +242,28 @@ instance WriteModes RW
 -- ** Standard handles
 
 -- | Wraps: @System.IO.@'SIO.stdin'.
-stdin :: Handle R
+stdin ∷ Handle R
 stdin = Handle SIO.stdin
 
 -- | Wraps: @System.IO.@'SIO.stdout'.
-stdout :: Handle W
+stdout ∷ Handle W
 stdout = Handle SIO.stdout
 
 -- | Wraps: @System.IO.@'SIO.stderr'.
-stderr :: Handle W
+stderr ∷ Handle W
 stderr = Handle SIO.stderr
 
 -- | Cast the IOMode of a handle if the handle supports it.
-cast :: forall anyIOMode castedIOMode. CheckMode castedIOMode
-     => Handle anyIOMode -> IO (Maybe (Handle castedIOMode))
+cast ∷ ∀ anyIOMode castedIOMode. CheckMode castedIOMode
+     ⇒ Handle anyIOMode → IO (Maybe (Handle castedIOMode))
 cast (Handle h) = do
-  b <- unTagged (checkMode :: Tagged castedIOMode (SIO.Handle -> IO Bool)) h
+  b ← unTagged (checkMode ∷ Tagged castedIOMode (SIO.Handle → IO Bool)) h
   return $ if b
            then Just $ Handle h
            else Nothing
 
 class CheckMode ioMode where
-    checkMode :: Tagged ioMode (SIO.Handle -> IO Bool)
+    checkMode ∷ Tagged ioMode (SIO.Handle → IO Bool)
 
 instance CheckMode R where
     checkMode = Tagged SIO.hIsReadable
@@ -254,8 +275,8 @@ instance CheckMode A where
     checkMode = Tagged SIO.hIsWritable
 
 instance CheckMode RW where
-    checkMode = Tagged $ \h -> liftM2 (&&) (SIO.hIsReadable h)
-                                           (SIO.hIsWritable h)
+    checkMode = Tagged $ \h → liftM2 (∧) (SIO.hIsReadable h)
+                                         (SIO.hIsWritable h)
 
 
 -- * Opening and closing files
@@ -264,24 +285,24 @@ instance CheckMode RW where
 -- ** Opening files
 
 -- | Wraps: @System.IO.@'SIO.withFile'.
-withFile :: FilePath -> IOMode ioMode -> (Handle ioMode -> IO r) -> IO r
-withFile fp ioMode f = SIO.withFile fp (convert ioMode) $ f . Handle
+withFile ∷ FilePath → IOMode ioMode → (Handle ioMode → IO α) → IO α
+withFile fp ioMode f = SIO.withFile fp (convert ioMode) $ f ∘ Handle
 
 -- | Wraps: @System.IO.@'SIO.openFile'.
-openFile :: FilePath -> IOMode ioMode -> IO (Handle ioMode)
-openFile fp = liftM Handle . SIO.openFile fp . convert
+openFile ∷ FilePath → IOMode ioMode → IO (Handle ioMode)
+openFile fp = liftM Handle ∘ SIO.openFile fp ∘ convert
 
 -- | The IOMode GADT which for each constructor specifies the associated IOMode
 -- type.
 --
 -- Also see: @System.IO.@'SIO.IOMode'.
 data IOMode ioMode where
-    ReadMode      :: IOMode R
-    WriteMode     :: IOMode W
-    AppendMode    :: IOMode A
-    ReadWriteMode :: IOMode RW
+    ReadMode      ∷ IOMode R
+    WriteMode     ∷ IOMode W
+    AppendMode    ∷ IOMode A
+    ReadWriteMode ∷ IOMode RW
 
-convert :: IOMode ioMode -> SIO.IOMode
+convert ∷ IOMode ioMode → SIO.IOMode
 convert ReadMode      = SIO.ReadMode
 convert WriteMode     = SIO.WriteMode
 convert AppendMode    = SIO.AppendMode
@@ -322,7 +343,7 @@ instance Show (IOMode ioMode) where
 -- ** Closing files
 
 -- | Wraps: @System.IO.@'SIO.hClose'.
-hClose :: Handle ioMode -> IO ()
+hClose ∷ Handle ioMode → IO ()
 hClose = wrap SIO.hClose
 
 
@@ -332,73 +353,73 @@ hClose = wrap SIO.hClose
 -- ** Determining and changing the size of a file
 
 -- | Wraps: @System.IO.@'SIO.hFileSize'.
-hFileSize :: Handle ioMode -> IO Integer
+hFileSize ∷ Handle ioMode → IO Integer
 hFileSize = wrap SIO.hFileSize
 
 #ifdef __GLASGOW_HASKELL__
 -- | Wraps: @System.IO.@'SIO.hSetFileSize'.
-hSetFileSize :: Handle ioMode -> Integer -> IO ()
+hSetFileSize ∷ Handle ioMode → Integer → IO ()
 hSetFileSize = wrap SIO.hSetFileSize
 #endif
 
 -- ** Detecting the end of input
 
 -- | Wraps: @System.IO.@'SIO.hIsEOF'.
-hIsEOF :: ReadModes ioMode => Handle ioMode -> IO Bool
+hIsEOF ∷ ReadModes ioMode ⇒ Handle ioMode → IO Bool
 hIsEOF = wrap SIO.hIsEOF
 
 
 -- ** Buffering operations
 
 -- | Wraps: @System.IO.@'SIO.hSetBuffering'.
-hSetBuffering :: Handle ioMode -> SIO.BufferMode -> IO ()
+hSetBuffering ∷ Handle ioMode → SIO.BufferMode → IO ()
 hSetBuffering = wrap SIO.hSetBuffering
 
 -- | Wraps: @System.IO.@'SIO.hGetBuffering'.
-hGetBuffering :: Handle ioMode -> IO SIO.BufferMode
+hGetBuffering ∷ Handle ioMode → IO SIO.BufferMode
 hGetBuffering = wrap SIO.hGetBuffering
 
 -- | Wraps: @System.IO.@'SIO.hFlush'.
-hFlush :: Handle ioMode -> IO ()
+hFlush ∷ Handle ioMode → IO ()
 hFlush = wrap SIO.hFlush
 
 
 -- ** Repositioning handles
 
 -- | Wraps: @System.IO.@'SIO.hGetPosn'.
-hGetPosn :: Handle ioMode -> IO SIO.HandlePosn
+hGetPosn ∷ Handle ioMode → IO SIO.HandlePosn
 hGetPosn = wrap SIO.hGetPosn
 
 -- | Wraps: @System.IO.@'SIO.hSeek'.
-hSeek :: Handle ioMode -> SIO.SeekMode -> Integer -> IO ()
+hSeek ∷ Handle ioMode → SIO.SeekMode → Integer → IO ()
 hSeek = wrap SIO.hSeek
 
 #if !defined(__NHC__)
 -- | Wraps: @System.IO.@'SIO.hTell'.
-hTell :: Handle ioMode -> IO Integer
+hTell ∷ Handle ioMode → IO Integer
 hTell = wrap SIO.hTell
 #endif
 
 -- ** Handle properties
 
 -- | Wraps: @System.IO.@'SIO.hIsOpen'.
-hIsOpen :: Handle ioMode -> IO Bool
+hIsOpen ∷ Handle ioMode → IO Bool
 hIsOpen = wrap SIO.hIsOpen
 
 -- | Wraps: @System.IO.@'SIO.hIsClosed'.
-hIsClosed :: Handle ioMode -> IO Bool
+hIsClosed ∷ Handle ioMode → IO Bool
 hIsClosed = wrap SIO.hIsClosed
 
 -- | Wraps: @System.IO.@'SIO.hIsReadable'.
-hIsReadable :: Handle ioMode -> IO Bool
+hIsReadable ∷ Handle ioMode → IO Bool
 hIsReadable = wrap SIO.hIsReadable
 
 -- | Wraps: @System.IO.@'SIO.hIsWritable'.
-hIsWritable :: Handle ioMode -> IO Bool
+hIsWritable ∷ Handle ioMode → IO Bool
 hIsWritable = wrap SIO.hIsWritable
 
 -- | Wraps: @System.IO.@'SIO.hIsSeekable'.
-hIsSeekable :: Handle ioMode -> IO Bool
+hIsSeekable ∷ Handle ioMode → IO Bool
 hIsSeekable = wrap SIO.hIsSeekable
 
 
@@ -406,15 +427,15 @@ hIsSeekable = wrap SIO.hIsSeekable
 
 #if !defined(__NHC__)
 -- | Wraps: @System.IO.@'SIO.hIsTerminalDevice'.
-hIsTerminalDevice :: Handle ioMode -> IO Bool
+hIsTerminalDevice ∷ Handle ioMode → IO Bool
 hIsTerminalDevice = wrap SIO.hIsTerminalDevice
 
 -- | Wraps: @System.IO.@'SIO.hSetEcho'.
-hSetEcho :: Handle ioMode -> Bool -> IO ()
+hSetEcho ∷ Handle ioMode → Bool → IO ()
 hSetEcho = wrap SIO.hSetEcho
 
 -- | Wraps: @System.IO.@'SIO.hGetEcho'.
-hGetEcho :: Handle ioMode -> IO Bool
+hGetEcho ∷ Handle ioMode → IO Bool
 hGetEcho = wrap SIO.hGetEcho
 #endif
 
@@ -422,7 +443,7 @@ hGetEcho = wrap SIO.hGetEcho
 
 #ifdef __GLASGOW_HASKELL__
 -- | Wraps: @System.IO.@'SIO.hShow'.
-hShow :: Handle ioMode -> IO String
+hShow ∷ Handle ioMode → IO String
 hShow = wrap SIO.hShow
 #endif
 
@@ -431,89 +452,89 @@ hShow = wrap SIO.hShow
 -- ** Text input
 
 -- | Wraps: @System.IO.@'SIO.hWaitForInput'.
-hWaitForInput :: ReadModes ioMode => Handle ioMode -> Int -> IO Bool
+hWaitForInput ∷ ReadModes ioMode ⇒ Handle ioMode → Int → IO Bool
 hWaitForInput = wrap SIO.hWaitForInput
 
 -- | Wraps: @System.IO.@'SIO.hReady'.
-hReady :: ReadModes ioMode => Handle ioMode -> IO Bool
+hReady ∷ ReadModes ioMode ⇒ Handle ioMode → IO Bool
 hReady = wrap SIO.hReady
 
 -- | Wraps: @System.IO.@'SIO.hGetChar'.
-hGetChar :: ReadModes ioMode => Handle ioMode -> IO Char
+hGetChar ∷ ReadModes ioMode ⇒ Handle ioMode → IO Char
 hGetChar = wrap SIO.hGetChar
 
 -- | Wraps: @System.IO.@'SIO.hGetLine'.
-hGetLine :: ReadModes ioMode => Handle ioMode -> IO String
+hGetLine ∷ ReadModes ioMode ⇒ Handle ioMode → IO String
 hGetLine = wrap SIO.hGetLine
 
 -- | Wraps: @System.IO.@'SIO.hLookAhead'.
-hLookAhead :: ReadModes ioMode => Handle ioMode -> IO Char
+hLookAhead ∷ ReadModes ioMode ⇒ Handle ioMode → IO Char
 hLookAhead = wrap SIO.hLookAhead
 
 -- | Wraps: @System.IO.@'SIO.hGetContents'.
-hGetContents :: ReadModes ioMode => Handle ioMode -> IO String
+hGetContents ∷ ReadModes ioMode ⇒ Handle ioMode → IO String
 hGetContents = wrap SIO.hGetContents
 
 
 -- ** Text ouput
 
 -- | Wraps: @System.IO.@'SIO.hPutChar'.
-hPutChar :: WriteModes ioMode => Handle ioMode -> Char -> IO ()
+hPutChar ∷ WriteModes ioMode ⇒ Handle ioMode → Char → IO ()
 hPutChar = wrap SIO.hPutChar
 
 -- | Wraps: @System.IO.@'SIO.hPutStr'.
-hPutStr :: WriteModes ioMode => Handle ioMode -> String -> IO ()
+hPutStr ∷ WriteModes ioMode ⇒ Handle ioMode → String → IO ()
 hPutStr = wrap SIO.hPutStr
 
 -- | Wraps: @System.IO.@'SIO.hPutStrLn'.
-hPutStrLn :: WriteModes ioMode => Handle ioMode -> String -> IO ()
+hPutStrLn ∷ WriteModes ioMode ⇒ Handle ioMode → String → IO ()
 hPutStrLn = wrap SIO.hPutStrLn
 
 -- | Wraps: @System.IO.@'SIO.hPrint'.
-hPrint :: (WriteModes ioMode, Show a) => Handle ioMode -> a -> IO ()
+hPrint ∷ (WriteModes ioMode, Show a) ⇒ Handle ioMode → a → IO ()
 hPrint = wrap SIO.hPrint
 
 
 -- * Binary input and output
 
 -- | Wraps: @System.IO.@'SIO.withBinaryFile'.
-withBinaryFile :: FilePath -> IOMode ioMode -> (Handle ioMode -> IO r) -> IO r
-withBinaryFile fp ioMode f = SIO.withBinaryFile fp (convert ioMode) $ f . Handle
+withBinaryFile ∷ FilePath → IOMode ioMode → (Handle ioMode → IO r) → IO r
+withBinaryFile fp ioMode f = SIO.withBinaryFile fp (convert ioMode) $ f ∘ Handle
 
 -- | Wraps: @System.IO.@'SIO.openBinaryFile'.
-openBinaryFile :: FilePath -> IOMode ioMode -> IO (Handle ioMode)
-openBinaryFile fp = liftM Handle . SIO.openBinaryFile fp . convert
+openBinaryFile ∷ FilePath → IOMode ioMode → IO (Handle ioMode)
+openBinaryFile fp = liftM Handle ∘ SIO.openBinaryFile fp ∘ convert
 
 -- | Wraps: @System.IO.@'SIO.hSetBinaryMode'.
-hSetBinaryMode :: Handle ioMode -> Bool -> IO ()
+hSetBinaryMode ∷ Handle ioMode → Bool → IO ()
 hSetBinaryMode = wrap SIO.hSetBinaryMode
 
 -- | Wraps: @System.IO.@'SIO.hPutBuf'.
-hPutBuf :: WriteModes ioMode => Handle ioMode -> Ptr a -> Int -> IO ()
+hPutBuf ∷ WriteModes ioMode ⇒ Handle ioMode → Ptr α → Int → IO ()
 hPutBuf = wrap SIO.hPutBuf
 
 -- | Wraps: @System.IO.@'SIO.hGetBuf'.
-hGetBuf :: ReadModes ioMode => Handle ioMode -> Ptr a -> Int -> IO Int
+hGetBuf ∷ ReadModes ioMode ⇒ Handle ioMode → Ptr α → Int → IO Int
 hGetBuf = wrap SIO.hGetBuf
 
 #if !defined(__NHC__) && !defined(__HUGS__)
 -- | Wraps: @System.IO.@'SIO.hPutBufNonBlocking'.
-hPutBufNonBlocking :: WriteModes ioMode => Handle ioMode -> Ptr a -> Int -> IO Int
+hPutBufNonBlocking ∷ WriteModes ioMode ⇒ Handle ioMode → Ptr α → Int → IO Int
 hPutBufNonBlocking = wrap SIO.hPutBufNonBlocking
 
 -- | Wraps: @System.IO.@'SIO.hGetBufNonBlocking'.
-hGetBufNonBlocking :: ReadModes ioMode => Handle ioMode -> Ptr a -> Int -> IO Int
+hGetBufNonBlocking ∷ ReadModes ioMode ⇒ Handle ioMode → Ptr α → Int → IO Int
 hGetBufNonBlocking = wrap SIO.hGetBufNonBlocking
 #endif
 
 -- * Temporary files
 
 -- | Wraps: @System.IO.@'SIO.openTempFile'.
-openTempFile :: FilePath -> String -> IO (FilePath, Handle RW)
+openTempFile ∷ FilePath → String → IO (FilePath, Handle RW)
 openTempFile fp template = liftM (second Handle) $ SIO.openTempFile fp template
 
 -- | Wraps: @System.IO.@'SIO.openBinaryTempFile'.
-openBinaryTempFile :: FilePath -> String -> IO (FilePath, Handle RW)
+openBinaryTempFile ∷ FilePath → String → IO (FilePath, Handle RW)
 openBinaryTempFile fp template = liftM (second Handle) $ SIO.openBinaryTempFile fp template
 
 
