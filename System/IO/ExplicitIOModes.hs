@@ -84,7 +84,7 @@ module System.IO.ExplicitIOModes
     , SIO.isEOF
 
       -- ** Buffering operations
-    , SIO.BufferMode( SIO.NoBuffering, SIO.LineBuffering, SIO.BlockBuffering )
+    , SIO.BufferMode(..)
     , hSetBuffering
     , hGetBuffering
     , hFlush
@@ -95,7 +95,7 @@ module System.IO.ExplicitIOModes
     , SIO.HandlePosn
 
     , hSeek
-    , SIO.SeekMode( SIO.AbsoluteSeek, SIO.RelativeSeek, SIO.SeekFromEnd )
+    , SIO.SeekMode(..)
 #if !defined(__NHC__)
     , hTell
 #endif
@@ -108,6 +108,7 @@ module System.IO.ExplicitIOModes
     -- ** Terminal operations (not portable: GHC/Hugs only)
 #if !defined(__NHC__)
     , hIsTerminalDevice
+
     , hSetEcho
     , hGetEcho
 #endif
@@ -170,6 +171,34 @@ module System.IO.ExplicitIOModes
     -- * Temporary files
     , openTempFile
     , openBinaryTempFile
+
+#if MIN_VERSION_base(4,2,0)
+    , openTempFileWithDefaultPermissions
+    , openBinaryTempFileWithDefaultPermissions
+#endif
+
+#if MIN_VERSION_base(4,2,0) && !defined(__NHC__) && !defined(__HUGS__)
+    -- * Unicode encoding/decoding
+    , hSetEncoding
+    , hGetEncoding
+
+    -- ** Unicode encodings
+    , SIO.TextEncoding
+    , SIO.latin1
+    , SIO.utf8, SIO.utf8_bom
+    , SIO.utf16, SIO.utf16le, SIO.utf16be
+    , SIO.utf32, SIO.utf32le, SIO.utf32be
+    , SIO.localeEncoding
+    , SIO.mkTextEncoding
+
+    -- * Newline conversion
+    , hSetNewlineMode
+    , SIO.Newline(..)
+    , SIO.nativeNewline
+    , SIO.NewlineMode(..)
+
+    , SIO.noNewlineTranslation, SIO.universalNewlineMode, SIO.nativeNewlineMode
+#endif
     ) where
 
 
@@ -213,7 +242,6 @@ newtype Handle ioMode = Handle
 wrap ∷ (SIO.Handle → α) → (Handle ioMode → α)
 wrap f = f ∘ regularHandle
 
-
 -- ** IO Modes
 
 -- | Read only.
@@ -237,7 +265,6 @@ instance ReadModes RW
 instance WriteModes W
 instance WriteModes A
 instance WriteModes RW
-
 
 -- ** Standard handles
 
@@ -338,7 +365,6 @@ instance Show (IOMode ioMode) where
     show WriteMode     = "WriteMode"
     show AppendMode    = "AppendMode"
     show ReadWriteMode = "ReadWriteMode"
-
 
 -- ** Closing files
 
@@ -447,6 +473,7 @@ hShow ∷ Handle ioMode → IO String
 hShow = wrap SIO.hShow
 #endif
 
+
 -- * Text input and output
 
 -- ** Text input
@@ -527,15 +554,45 @@ hGetBufNonBlocking ∷ ReadModes ioMode ⇒ Handle ioMode → Ptr α → Int →
 hGetBufNonBlocking = wrap SIO.hGetBufNonBlocking
 #endif
 
+
 -- * Temporary files
 
 -- | Wraps: @System.IO.@'SIO.openTempFile'.
 openTempFile ∷ FilePath → String → IO (FilePath, Handle RW)
-openTempFile fp template = liftM (second Handle) $ SIO.openTempFile fp template
+openTempFile fp template =
+    liftM (second Handle) $ SIO.openTempFile fp template
 
 -- | Wraps: @System.IO.@'SIO.openBinaryTempFile'.
 openBinaryTempFile ∷ FilePath → String → IO (FilePath, Handle RW)
-openBinaryTempFile fp template = liftM (second Handle) $ SIO.openBinaryTempFile fp template
+openBinaryTempFile fp template =
+    liftM (second Handle) $ SIO.openBinaryTempFile fp template
+
+#if MIN_VERSION_base(4,2,0)
+openTempFileWithDefaultPermissions ∷ FilePath → String → IO (FilePath, Handle RW)
+openTempFileWithDefaultPermissions fp template =
+    liftM (second Handle) $ SIO.openTempFileWithDefaultPermissions fp template
+
+openBinaryTempFileWithDefaultPermissions ∷ FilePath → String → IO (FilePath, Handle RW)
+openBinaryTempFileWithDefaultPermissions fp template =
+    liftM (second Handle) $ SIO.openBinaryTempFileWithDefaultPermissions fp template
+#endif
+
+#if MIN_VERSION_base(4,2,0) && !defined(__NHC__) && !defined(__HUGS__)
+-- * Unicode encoding/decoding
+
+hSetEncoding ∷ Handle ioMode → SIO.TextEncoding → IO ()
+hSetEncoding = wrap SIO.hSetEncoding
+
+hGetEncoding ∷ Handle ioMode → IO (Maybe SIO.TextEncoding)
+hGetEncoding = wrap SIO.hGetEncoding
+
+
+-- * Newline conversion
+
+hSetNewlineMode ∷ Handle ioMode → SIO.NewlineMode → IO ()
+hSetNewlineMode = wrap SIO.hSetNewlineMode
+#endif
+
 
 
 -- The End ---------------------------------------------------------------------
