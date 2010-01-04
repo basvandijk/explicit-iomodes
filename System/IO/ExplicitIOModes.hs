@@ -523,7 +523,7 @@ hPutStrLn ∷ WriteModes ioMode ⇒ Handle ioMode → String → IO ()
 hPutStrLn = wrap SIO.hPutStrLn
 
 -- | Wraps: @System.IO.@'SIO.hPrint'.
-hPrint ∷ (WriteModes ioMode, Show a) ⇒ Handle ioMode → a → IO ()
+hPrint ∷ (WriteModes ioMode, Show α) ⇒ Handle ioMode → α → IO ()
 hPrint = wrap SIO.hPrint
 
 
