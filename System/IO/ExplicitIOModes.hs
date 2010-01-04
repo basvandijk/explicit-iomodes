@@ -46,6 +46,8 @@ module System.IO.ExplicitIOModes
       -- | Types that represent the IOMode a 'Handle' can be in.
     , R, W, A, RW
 
+    , ReadModes, WriteModes
+
       -- ** Standard handles
 
       -- | These standard handles have concrete IOModes by default which work
@@ -256,7 +258,10 @@ data A
 -- | Read and write.
 data RW
 
+-- | Class of readable IO mode types.
 class ReadModes  ioMode
+
+-- | Class of writable IO mode types.
 class WriteModes ioMode
 
 instance ReadModes R
