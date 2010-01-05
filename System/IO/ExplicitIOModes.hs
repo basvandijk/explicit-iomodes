@@ -58,6 +58,7 @@ module System.IO.ExplicitIOModes
     , stderr
 
     , cast
+    , CheckMode
 
       -- * Opening and closing files
       -- ** Opening files
