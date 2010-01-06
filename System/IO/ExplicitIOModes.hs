@@ -126,7 +126,7 @@ module System.IO.ExplicitIOModes
 
     -- | Note that the following text input operations are polymorphic in the
     -- IOMode of the given handle. However the IOModes are restricted to
-    -- @ReadModes@ only which can be either 'R' or 'RW'.
+    -- 'ReadModes' only which can be either 'R' or 'RW'.
     , hWaitForInput
     , hReady
     , hGetChar
@@ -138,7 +138,7 @@ module System.IO.ExplicitIOModes
 
     -- | Note that the following text output operations are polymorphic in the
     -- IOMode of the given handle. However the IOModes are restricted to
-    -- @WriteModes@ only which can be either 'W', 'A' or 'RW'.
+    -- 'WriteModes' only which can be either 'W', 'A' or 'RW'.
     , hPutChar
     , hPutStr
     , hPutStrLn
@@ -253,10 +253,10 @@ data R
 -- | Write only.
 data W
 
--- | Append.
+-- | Write only by appending.
 data A
 
--- | Read and write.
+-- | Both read and write.
 data RW
 
 -- | Class of readable IO mode types.
