@@ -65,6 +65,7 @@ module System.IO.ExplicitIOModes
     , withFile
     , openFile
     , IOMode(..)
+    , regularIOMode
 
       -- ** Closing files
     , hClose
@@ -319,11 +320,11 @@ instance CheckMode RW where
 
 -- | Wraps: @System.IO.@'SIO.withFile'.
 withFile ∷ FilePath → IOMode ioMode → (Handle ioMode → IO α) → IO α
-withFile fp ioMode f = SIO.withFile fp (convert ioMode) $ f ∘ Handle
+withFile fp ioMode f = SIO.withFile fp (regularIOMode ioMode) $ f ∘ Handle
 
 -- | Wraps: @System.IO.@'SIO.openFile'.
 openFile ∷ FilePath → IOMode ioMode → IO (Handle ioMode)
-openFile fp = liftM Handle ∘ SIO.openFile fp ∘ convert
+openFile fp = liftM Handle ∘ SIO.openFile fp ∘ regularIOMode
 
 -- | The IOMode GADT which for each constructor specifies the associated IOMode
 -- type.
@@ -335,11 +336,12 @@ data IOMode ioMode where
     AppendMode    ∷ IOMode A
     ReadWriteMode ∷ IOMode RW
 
-convert ∷ IOMode ioMode → SIO.IOMode
-convert ReadMode      = SIO.ReadMode
-convert WriteMode     = SIO.WriteMode
-convert AppendMode    = SIO.AppendMode
-convert ReadWriteMode = SIO.ReadWriteMode
+-- | Retrieves the regular @System.IO.@'SIO.IOMode'.
+regularIOMode ∷ IOMode ioMode → SIO.IOMode
+regularIOMode ReadMode      = SIO.ReadMode
+regularIOMode WriteMode     = SIO.WriteMode
+regularIOMode AppendMode    = SIO.AppendMode
+regularIOMode ReadWriteMode = SIO.ReadWriteMode
 
 instance Eq (IOMode ioMode) where
     ReadMode      == ReadMode      = True
@@ -532,11 +534,11 @@ hPrint = wrap SIO.hPrint
 
 -- | Wraps: @System.IO.@'SIO.withBinaryFile'.
 withBinaryFile ∷ FilePath → IOMode ioMode → (Handle ioMode → IO r) → IO r
-withBinaryFile fp ioMode f = SIO.withBinaryFile fp (convert ioMode) $ f ∘ Handle
+withBinaryFile fp ioMode f = SIO.withBinaryFile fp (regularIOMode ioMode) $ f ∘ Handle
 
 -- | Wraps: @System.IO.@'SIO.openBinaryFile'.
 openBinaryFile ∷ FilePath → IOMode ioMode → IO (Handle ioMode)
-openBinaryFile fp = liftM Handle ∘ SIO.openBinaryFile fp ∘ convert
+openBinaryFile fp = liftM Handle ∘ SIO.openBinaryFile fp ∘ regularIOMode
 
 -- | Wraps: @System.IO.@'SIO.hSetBinaryMode'.
 hSetBinaryMode ∷ Handle ioMode → Bool → IO ()

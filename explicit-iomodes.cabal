@@ -1,5 +1,5 @@
 name:          explicit-iomodes
-version:       0.1.4
+version:       0.1.5
 cabal-version: >=1.6
 build-type:    Simple
 license:       BSD3
