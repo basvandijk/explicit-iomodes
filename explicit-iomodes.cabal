@@ -1,5 +1,5 @@
 name:          explicit-iomodes
-version:       0.1.5
+version:       0.2
 cabal-version: >=1.6
 build-type:    Simple
 license:       BSD3
@@ -23,7 +23,10 @@ source-repository head
 
 Library
   GHC-Options: -O2 -Wall
-  build-depends: base >= 4 && < 4.3
+  build-depends: base                 >= 4     && < 4.3
                , base-unicode-symbols >= 0.1.1 && < 0.2
-               , tagged == 0.0.*
+               , bytestring           == 0.9.*
+               , tagged               == 0.0.*
   exposed-modules: System.IO.ExplicitIOModes
+                   Data.ByteString.ExplicitIOModes
+  other-modules: System.IO.ExplicitIOModes.Internal

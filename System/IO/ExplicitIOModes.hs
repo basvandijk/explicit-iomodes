@@ -1,11 +1,10 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE EmptyDataDecls #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE CPP
+           , NoImplicitPrelude
+           , UnicodeSyntax
+           , EmptyDataDecls
+           , GADTs
+           , ScopedTypeVariables
+  #-}
 
 -------------------------------------------------------------------------------
 -- |
@@ -39,7 +38,6 @@ module System.IO.ExplicitIOModes
     , SIO.FilePath
 
     , Handle
-    , regularHandle
 
       -- ** IO Modes
 
@@ -218,7 +216,6 @@ import Data.Bool           ( Bool(False, True) )
 import Data.Maybe          ( Maybe(Nothing, Just) )
 import Data.Int            ( Int )
 import Data.Char           ( Char, String )
-import Data.Typeable       ( Typeable )
 import Text.Show           ( Show, show )
 import System.IO           ( IO, FilePath )
 
@@ -231,20 +228,11 @@ import Data.Bool.Unicode     ( (∧) )
 -- from tagged:
 import Data.Tagged ( Tagged(Tagged), unTagged )
 
+-- from ourselves:
+import System.IO.ExplicitIOModes.Internal ( Handle(Handle), wrap)
+
 
 -- * Files and handles
-
--- | A handle to a file with an explicit IOMode.
---
--- Wraps: @System.IO.@'SIO.Handle'.
-newtype Handle ioMode = Handle
-    { -- | Retrieves the regular @System.IO.@'SIO.Handle'.
-      regularHandle ∷ SIO.Handle
-    }
-    deriving ( Show, Eq, Typeable )
-
-wrap ∷ (SIO.Handle → α) → (Handle ioMode → α)
-wrap f = f ∘ regularHandle
 
 -- ** IO Modes
 
