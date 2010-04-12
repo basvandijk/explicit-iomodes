@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------
 -- |
 -- Module      :  System.IO.ExplicitIOModes
--- Copyright   :  (c) 2009 Bas van Dijk
+-- Copyright   :  (c) 2009-2010 Bas van Dijk
 -- License     :  BSD3 (see the file LICENSE)
 -- Maintainer  :  Bas van Dijk <v.dijk.bas@gmail.com>
 --
@@ -204,6 +204,10 @@ module System.IO.ExplicitIOModes
     ) where
 
 
+--------------------------------------------------------------------------------
+-- Imports
+--------------------------------------------------------------------------------
+
 -- from base:
 import Prelude             ( Integer )
 import Control.Monad       ( return, (>>=), fail, liftM, liftM2 )
@@ -232,7 +236,9 @@ import Data.Tagged ( Tagged(Tagged), unTagged )
 import System.IO.ExplicitIOModes.Internal ( Handle(Handle), wrap)
 
 
+--------------------------------------------------------------------------------
 -- * Files and handles
+--------------------------------------------------------------------------------
 
 -- ** IO Modes
 
@@ -301,8 +307,9 @@ instance CheckMode RW where
                                          (SIO.hIsWritable h)
 
 
+--------------------------------------------------------------------------------
 -- * Opening and closing files
-
+--------------------------------------------------------------------------------
 
 -- ** Opening files
 
@@ -369,8 +376,9 @@ hClose ∷ Handle ioMode → IO ()
 hClose = wrap SIO.hClose
 
 
+--------------------------------------------------------------------------------
 -- * Operations on handles
-
+--------------------------------------------------------------------------------
 
 -- ** Determining and changing the size of a file
 
@@ -470,7 +478,9 @@ hShow = wrap SIO.hShow
 #endif
 
 
+--------------------------------------------------------------------------------
 -- * Text input and output
+--------------------------------------------------------------------------------
 
 -- ** Text input
 
@@ -518,7 +528,9 @@ hPrint ∷ (WriteModes ioMode, Show α) ⇒ Handle ioMode → α → IO ()
 hPrint = wrap SIO.hPrint
 
 
+--------------------------------------------------------------------------------
 -- * Binary input and output
+--------------------------------------------------------------------------------
 
 -- | Wraps: @System.IO.@'SIO.withBinaryFile'.
 withBinaryFile ∷ FilePath → IOMode ioMode → (Handle ioMode → IO r) → IO r
@@ -551,7 +563,9 @@ hGetBufNonBlocking = wrap SIO.hGetBufNonBlocking
 #endif
 
 
+--------------------------------------------------------------------------------
 -- * Temporary files
+--------------------------------------------------------------------------------
 
 -- | Wraps: @System.IO.@'SIO.openTempFile'.
 openTempFile ∷ FilePath → String → IO (FilePath, Handle RW)
@@ -583,7 +597,9 @@ hGetEncoding ∷ Handle ioMode → IO (Maybe SIO.TextEncoding)
 hGetEncoding = wrap SIO.hGetEncoding
 
 
+--------------------------------------------------------------------------------
 -- * Newline conversion
+--------------------------------------------------------------------------------
 
 hSetNewlineMode ∷ Handle ioMode → SIO.NewlineMode → IO ()
 hSetNewlineMode = wrap SIO.hSetNewlineMode
