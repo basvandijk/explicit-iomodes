@@ -24,8 +24,8 @@
 --
 -- There's one exception to this last statement: If you are using the standard
 -- handles 'stdin', 'stdout' or 'stderr' in a mode which isn't their default
--- mode ('R' for 'stdin' and 'W' for 'stdout' and 'stderr') you have to 'cast'
--- these handles to the expected IOMode.
+-- mode ('ReadMode' for 'stdin' and 'WriteMode' for 'stdout' and 'stderr') you
+-- have to 'cast' these handles to the expected IOMode.
 --
 --------------------------------------------------------------------------------
 
@@ -42,9 +42,13 @@ module System.IO.ExplicitIOModes
       -- ** IO Modes
 
       -- | Types that represent the IOMode a 'Handle' can be in.
-    , R, W, A, RW
+    , ReadMode
+    , WriteMode
+    , AppendMode
+    , ReadWriteMode
 
-    , ReadModes, WriteModes
+    , ReadModes
+    , WriteModes
 
       -- ** Standard handles
 
@@ -125,7 +129,7 @@ module System.IO.ExplicitIOModes
 
     -- | Note that the following text input operations are polymorphic in the
     -- IOMode of the given handle. However the IOModes are restricted to
-    -- 'ReadModes' only which can be either 'R' or 'RW'.
+    -- 'ReadModes' only which can be either 'ReadMode' or 'ReadWriteMode'.
     , hWaitForInput
     , hReady
     , hGetChar
@@ -137,7 +141,8 @@ module System.IO.ExplicitIOModes
 
     -- | Note that the following text output operations are polymorphic in the
     -- IOMode of the given handle. However the IOModes are restricted to
-    -- 'WriteModes' only which can be either 'W', 'A' or 'RW'.
+    -- 'WriteModes' only which can be either 'WriteMode', 'AppendMode' or
+    -- 'ReadWriteMode'.
     , hPutChar
     , hPutStr
     , hPutStrLn
@@ -243,16 +248,16 @@ import System.IO.ExplicitIOModes.Internal ( Handle(Handle), wrap)
 -- ** IO Modes
 
 -- | Read only.
-data R
+data ReadMode
 
 -- | Write only.
-data W
+data WriteMode
 
 -- | Write only by appending.
-data A
+data AppendMode
 
 -- | Both read and write.
-data RW
+data ReadWriteMode
 
 -- | Class of readable IO mode types.
 class ReadModes  ioMode
@@ -260,25 +265,25 @@ class ReadModes  ioMode
 -- | Class of writable IO mode types.
 class WriteModes ioMode
 
-instance ReadModes R
-instance ReadModes RW
+instance ReadModes ReadMode
+instance ReadModes ReadWriteMode
 
-instance WriteModes W
-instance WriteModes A
-instance WriteModes RW
+instance WriteModes WriteMode
+instance WriteModes AppendMode
+instance WriteModes ReadWriteMode
 
 -- ** Standard handles
 
 -- | Wraps: @System.IO.@'SIO.stdin'.
-stdin ∷ Handle R
+stdin ∷ Handle ReadMode
 stdin = Handle SIO.stdin
 
 -- | Wraps: @System.IO.@'SIO.stdout'.
-stdout ∷ Handle W
+stdout ∷ Handle WriteMode
 stdout = Handle SIO.stdout
 
 -- | Wraps: @System.IO.@'SIO.stderr'.
-stderr ∷ Handle W
+stderr ∷ Handle WriteMode
 stderr = Handle SIO.stderr
 
 -- | Cast the IOMode of a handle if the handle supports it.
@@ -293,16 +298,16 @@ cast (Handle h) = do
 class CheckMode ioMode where
     checkMode ∷ Tagged ioMode (SIO.Handle → IO Bool)
 
-instance CheckMode R where
+instance CheckMode ReadMode where
     checkMode = Tagged SIO.hIsReadable
 
-instance CheckMode W where
+instance CheckMode WriteMode where
     checkMode = Tagged SIO.hIsWritable
 
-instance CheckMode A where
+instance CheckMode AppendMode where
     checkMode = Tagged SIO.hIsWritable
 
-instance CheckMode RW where
+instance CheckMode ReadWriteMode where
     checkMode = Tagged $ \h → liftM2 (∧) (SIO.hIsReadable h)
                                          (SIO.hIsWritable h)
 
@@ -326,10 +331,10 @@ openFile fp = liftM Handle ∘ SIO.openFile fp ∘ regularIOMode
 --
 -- Also see: @System.IO.@'SIO.IOMode'.
 data IOMode ioMode where
-    ReadMode      ∷ IOMode R
-    WriteMode     ∷ IOMode W
-    AppendMode    ∷ IOMode A
-    ReadWriteMode ∷ IOMode RW
+    ReadMode      ∷ IOMode ReadMode
+    WriteMode     ∷ IOMode WriteMode
+    AppendMode    ∷ IOMode AppendMode
+    ReadWriteMode ∷ IOMode ReadWriteMode
 
 -- | Retrieves the regular @System.IO.@'SIO.IOMode'.
 regularIOMode ∷ IOMode ioMode → SIO.IOMode
@@ -568,21 +573,21 @@ hGetBufNonBlocking = wrap SIO.hGetBufNonBlocking
 --------------------------------------------------------------------------------
 
 -- | Wraps: @System.IO.@'SIO.openTempFile'.
-openTempFile ∷ FilePath → String → IO (FilePath, Handle RW)
+openTempFile ∷ FilePath → String → IO (FilePath, Handle ReadWriteMode)
 openTempFile fp template =
     liftM (second Handle) $ SIO.openTempFile fp template
 
 -- | Wraps: @System.IO.@'SIO.openBinaryTempFile'.
-openBinaryTempFile ∷ FilePath → String → IO (FilePath, Handle RW)
+openBinaryTempFile ∷ FilePath → String → IO (FilePath, Handle ReadWriteMode)
 openBinaryTempFile fp template =
     liftM (second Handle) $ SIO.openBinaryTempFile fp template
 
 #if MIN_VERSION_base(4,2,0)
-openTempFileWithDefaultPermissions ∷ FilePath → String → IO (FilePath, Handle RW)
+openTempFileWithDefaultPermissions ∷ FilePath → String → IO (FilePath, Handle ReadWriteMode)
 openTempFileWithDefaultPermissions fp template =
     liftM (second Handle) $ SIO.openTempFileWithDefaultPermissions fp template
 
-openBinaryTempFileWithDefaultPermissions ∷ FilePath → String → IO (FilePath, Handle RW)
+openBinaryTempFileWithDefaultPermissions ∷ FilePath → String → IO (FilePath, Handle ReadWriteMode)
 openBinaryTempFileWithDefaultPermissions fp template =
     liftM (second Handle) $ SIO.openBinaryTempFileWithDefaultPermissions fp template
 #endif
