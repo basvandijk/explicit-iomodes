@@ -42,6 +42,9 @@ module System.IO.ExplicitIOModes
       -- ** IO Modes
 
       -- | Types that represent the IOMode a 'Handle' can be in.
+    , IOMode(..)
+    , regularIOMode
+
     , ReadMode
     , WriteMode
     , AppendMode
@@ -66,8 +69,6 @@ module System.IO.ExplicitIOModes
       -- ** Opening files
     , withFile
     , openFile
-    , IOMode(..)
-    , regularIOMode
 
       -- ** Closing files
     , hClose
@@ -247,6 +248,54 @@ import System.IO.ExplicitIOModes.Internal ( Handle(Handle), wrap)
 
 -- ** IO Modes
 
+-- | The IOMode GADT which for each constructor specifies the associated IOMode
+-- type.
+--
+-- Also see: @System.IO.@'SIO.IOMode'.
+data IOMode ioMode where
+    ReadMode      ∷ IOMode ReadMode
+    WriteMode     ∷ IOMode WriteMode
+    AppendMode    ∷ IOMode AppendMode
+    ReadWriteMode ∷ IOMode ReadWriteMode
+
+-- | Retrieves the regular @System.IO.@'SIO.IOMode'.
+regularIOMode ∷ IOMode ioMode → SIO.IOMode
+regularIOMode ReadMode      = SIO.ReadMode
+regularIOMode WriteMode     = SIO.WriteMode
+regularIOMode AppendMode    = SIO.AppendMode
+regularIOMode ReadWriteMode = SIO.ReadWriteMode
+
+instance Eq (IOMode ioMode) where
+    ReadMode      == ReadMode      = True
+    WriteMode     == WriteMode     = True
+    AppendMode    == AppendMode    = True
+    ReadWriteMode == ReadWriteMode = True
+    _             == _             = False
+
+instance Ord (IOMode ioMode) where
+    ReadWriteMode <= ReadWriteMode = True
+    ReadWriteMode <= _             = False
+
+    AppendMode    <= ReadWriteMode = True
+    AppendMode    <= AppendMode    = True
+    AppendMode    <= _             = False
+
+    WriteMode     <= ReadWriteMode = True
+    WriteMode     <= AppendMode    = True
+    WriteMode     <= WriteMode     = True
+    WriteMode     <= _             = False
+
+    ReadMode      <= ReadWriteMode = True
+    ReadMode      <= AppendMode    = True
+    ReadMode      <= WriteMode     = True
+    ReadMode      <= ReadMode      = True
+
+instance Show (IOMode ioMode) where
+    show ReadMode      = "ReadMode"
+    show WriteMode     = "WriteMode"
+    show AppendMode    = "AppendMode"
+    show ReadWriteMode = "ReadWriteMode"
+
 -- | Read only.
 data ReadMode
 
@@ -325,54 +374,6 @@ withFile fp ioMode f = SIO.withFile fp (regularIOMode ioMode) $ f ∘ Handle
 -- | Wraps: @System.IO.@'SIO.openFile'.
 openFile ∷ FilePath → IOMode ioMode → IO (Handle ioMode)
 openFile fp = liftM Handle ∘ SIO.openFile fp ∘ regularIOMode
-
--- | The IOMode GADT which for each constructor specifies the associated IOMode
--- type.
---
--- Also see: @System.IO.@'SIO.IOMode'.
-data IOMode ioMode where
-    ReadMode      ∷ IOMode ReadMode
-    WriteMode     ∷ IOMode WriteMode
-    AppendMode    ∷ IOMode AppendMode
-    ReadWriteMode ∷ IOMode ReadWriteMode
-
--- | Retrieves the regular @System.IO.@'SIO.IOMode'.
-regularIOMode ∷ IOMode ioMode → SIO.IOMode
-regularIOMode ReadMode      = SIO.ReadMode
-regularIOMode WriteMode     = SIO.WriteMode
-regularIOMode AppendMode    = SIO.AppendMode
-regularIOMode ReadWriteMode = SIO.ReadWriteMode
-
-instance Eq (IOMode ioMode) where
-    ReadMode      == ReadMode      = True
-    WriteMode     == WriteMode     = True
-    AppendMode    == AppendMode    = True
-    ReadWriteMode == ReadWriteMode = True
-    _             == _             = False
-
-instance Ord (IOMode ioMode) where
-    ReadWriteMode <= ReadWriteMode = True
-    ReadWriteMode <= _             = False
-
-    AppendMode    <= ReadWriteMode = True
-    AppendMode    <= AppendMode    = True
-    AppendMode    <= _             = False
-
-    WriteMode     <= ReadWriteMode = True
-    WriteMode     <= AppendMode    = True
-    WriteMode     <= WriteMode     = True
-    WriteMode     <= _             = False
-
-    ReadMode      <= ReadWriteMode = True
-    ReadMode      <= AppendMode    = True
-    ReadMode      <= WriteMode     = True
-    ReadMode      <= ReadMode      = True
-
-instance Show (IOMode ioMode) where
-    show ReadMode      = "ReadMode"
-    show WriteMode     = "WriteMode"
-    show AppendMode    = "AppendMode"
-    show ReadWriteMode = "ReadWriteMode"
 
 -- ** Closing files
 
