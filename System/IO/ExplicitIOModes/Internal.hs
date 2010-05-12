@@ -10,7 +10,7 @@ import qualified System.IO ( Handle )
 
 -- | A handle to a file with an explicit IOMode.
 --
--- Wraps: @System.IO.@'SIO.Handle'.
+-- Wraps: @System.IO.'System.IO.Handle'@.
 newtype Handle ioMode = Handle
     { -- | Retrieves the regular @System.IO.@'System.IO.Handle'.
       regularHandle ∷ System.IO.Handle
