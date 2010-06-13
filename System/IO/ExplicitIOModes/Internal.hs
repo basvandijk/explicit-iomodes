@@ -16,9 +16,3 @@ newtype Handle ioMode = Handle
       regularHandle ∷ System.IO.Handle
     }
     deriving ( Show, Eq, Typeable )
-
-wrap ∷ (System.IO.Handle → α) → (Handle ioMode → α)
-wrap f = \h → f (regularHandle h)
-
-wrap2 ∷ (System.IO.Handle → β → α) → (Handle ioMode → β → α)
-wrap2 f = \h y → f (regularHandle h) y

@@ -38,8 +38,8 @@ import qualified Data.ByteString.Lazy.Char8 as B ( hGetContents
                                                  )
 
 -- from ourselves:
-import System.IO.ExplicitIOModes          ( ReadModes, WriteModes )
-import System.IO.ExplicitIOModes.Internal ( Handle, wrap, wrap2 )
+import System.IO.ExplicitIOModes        ( Handle, ReadModes, WriteModes )
+import System.IO.ExplicitIOModes.Unsafe ( wrap, wrap2 )
 
 
 -------------------------------------------------------------------------------

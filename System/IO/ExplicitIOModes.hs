@@ -239,7 +239,8 @@ import Data.Bool.Unicode     ( (∧) )
 import Data.Tagged ( Tagged(Tagged), unTagged )
 
 -- from ourselves:
-import System.IO.ExplicitIOModes.Internal ( Handle(Handle), wrap)
+import System.IO.ExplicitIOModes.Internal ( Handle(Handle) )
+import System.IO.ExplicitIOModes.Unsafe   ( wrap )
 
 
 --------------------------------------------------------------------------------
