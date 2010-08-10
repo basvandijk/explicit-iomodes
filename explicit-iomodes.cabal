@@ -17,8 +17,8 @@ description:   The module @System.IO.ExplicitIOModes@ exports a
                impossible to read from a write-only handle or write to
                a read-only handle for example.
                .
-	       See the @explicit-iomodes-bytestring@ package for
-	       @ByteString@ operations.
+	       See the @explicit-iomodes-bytestring/text@ package for
+	       @ByteString/Text@ operations.
 
 source-repository head
   Type:     darcs
