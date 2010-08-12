@@ -43,6 +43,7 @@ module System.IO.ExplicitIOModes
 
       -- | Types that represent the IOMode a 'Handle' can be in.
     , IOMode(..)
+    , MkIOMode(mkIOMode)
     , regularIOMode
 
     , ReadMode
@@ -69,6 +70,10 @@ module System.IO.ExplicitIOModes
       -- ** Opening files
     , withFile
     , openFile
+
+      -- *** Opening files by inferring the IOMode
+    , withFile'
+    , openFile'
 
       -- ** Closing files
     , hClose
@@ -167,6 +172,12 @@ module System.IO.ExplicitIOModes
     -- * Binary input and output
     , withBinaryFile
     , openBinaryFile
+
+      -- ** Opening binary files by inferring the IOMode
+    , withBinaryFile'
+    , openBinaryFile'
+
+      -- ** Operations on binary handles
     , hSetBinaryMode
     , hPutBuf
     , hGetBuf
@@ -258,6 +269,15 @@ data IOMode ioMode where
     WriteMode     ∷ IOMode WriteMode
     AppendMode    ∷ IOMode AppendMode
     ReadWriteMode ∷ IOMode ReadWriteMode
+
+class MkIOMode ioMode where
+    -- | An overloaded IOMode constructor.
+    mkIOMode ∷ IOMode ioMode
+
+instance MkIOMode ReadMode      where mkIOMode = ReadMode
+instance MkIOMode WriteMode     where mkIOMode = WriteMode
+instance MkIOMode AppendMode    where mkIOMode = AppendMode
+instance MkIOMode ReadWriteMode where mkIOMode = ReadWriteMode
 
 -- | Retrieves the regular @System.IO.@'SIO.IOMode'.
 regularIOMode ∷ IOMode ioMode → SIO.IOMode
@@ -375,6 +395,19 @@ withFile fp ioMode f = SIO.withFile fp (regularIOMode ioMode) $ f ∘ Handle
 -- | Wraps: @System.IO.@'SIO.openFile'.
 openFile ∷ FilePath → IOMode ioMode → IO (Handle ioMode)
 openFile fp = liftM Handle ∘ SIO.openFile fp ∘ regularIOMode
+
+-- *** Opening files by inferring the IOMode
+
+-- | Open a file without explicitly specifying the IOMode. The IOMode is
+-- inferred from the type of the resulting 'Handle'.
+--
+-- Note that: @openFile' fp = 'openFile' fp 'mkIOMode'@.
+openFile' ∷ MkIOMode ioMode ⇒ FilePath → IO (Handle ioMode)
+openFile' fp = openFile fp mkIOMode
+
+-- | Note that: @withFile' fp = 'withFile' fp 'mkIOMode'@.
+withFile' ∷ MkIOMode ioMode ⇒ FilePath → (Handle ioMode → IO α) → IO α
+withFile' fp = withFile fp mkIOMode
 
 -- ** Closing files
 
@@ -546,6 +579,20 @@ withBinaryFile fp ioMode f = SIO.withBinaryFile fp (regularIOMode ioMode) $ f �
 -- | Wraps: @System.IO.@'SIO.openBinaryFile'.
 openBinaryFile ∷ FilePath → IOMode ioMode → IO (Handle ioMode)
 openBinaryFile fp = liftM Handle ∘ SIO.openBinaryFile fp ∘ regularIOMode
+
+
+-- ** Opening binary files by inferring the IOMode
+
+-- | Note that: @withBinaryFile' fp = 'withBinaryFile' fp 'mkIOMode'@.
+withBinaryFile' ∷ MkIOMode ioMode ⇒ FilePath → (Handle ioMode → IO α) → IO α
+withBinaryFile' fp = withBinaryFile fp mkIOMode
+
+-- | Note that: @openBinaryFile' fp = 'openBinaryFile' fp 'mkIOMode'@.
+openBinaryFile' ∷ MkIOMode ioMode ⇒ FilePath → IO (Handle ioMode)
+openBinaryFile' fp = openBinaryFile fp mkIOMode
+
+
+-- ** Operations on binary handles
 
 -- | Wraps: @System.IO.@'SIO.hSetBinaryMode'.
 hSetBinaryMode ∷ Handle ioMode → Bool → IO ()
