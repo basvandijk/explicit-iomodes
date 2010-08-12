@@ -368,18 +368,12 @@ cast (Handle h) = do
 class CheckMode ioMode where
     checkMode ∷ Tagged ioMode (SIO.Handle → IO Bool)
 
-instance CheckMode ReadMode where
-    checkMode = Tagged SIO.hIsReadable
-
-instance CheckMode WriteMode where
-    checkMode = Tagged SIO.hIsWritable
-
-instance CheckMode AppendMode where
-    checkMode = Tagged SIO.hIsWritable
-
-instance CheckMode ReadWriteMode where
-    checkMode = Tagged $ \h → liftM2 (∧) (SIO.hIsReadable h)
-                                         (SIO.hIsWritable h)
+instance CheckMode ReadMode      where checkMode = Tagged SIO.hIsReadable
+instance CheckMode WriteMode     where checkMode = Tagged SIO.hIsWritable
+instance CheckMode AppendMode    where checkMode = Tagged SIO.hIsWritable
+instance CheckMode ReadWriteMode where checkMode = Tagged $
+                                         \h → liftM2 (∧) (SIO.hIsReadable h)
+                                                         (SIO.hIsWritable h)
 
 
 --------------------------------------------------------------------------------
