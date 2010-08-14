@@ -42,10 +42,6 @@ module System.IO.ExplicitIOModes
       -- ** IO Modes
 
       -- | Types that represent the IOMode a 'Handle' can be in.
-    , IOMode(..)
-    , MkIOMode(mkIOMode)
-    , regularIOMode
-
     , ReadMode
     , WriteMode
     , AppendMode
@@ -53,6 +49,10 @@ module System.IO.ExplicitIOModes
 
     , ReadModes
     , WriteModes
+
+    , IOMode(..)
+    , MkIOMode(mkIOMode)
+    , regularIOMode
 
       -- ** Standard handles
 
@@ -68,12 +68,12 @@ module System.IO.ExplicitIOModes
 
       -- * Opening and closing files
       -- ** Opening files
-    , withFile
     , openFile
+    , withFile
 
       -- *** Opening files by inferring the IOMode
-    , withFile'
     , openFile'
+    , withFile'
 
       -- ** Closing files
     , hClose
@@ -170,12 +170,12 @@ module System.IO.ExplicitIOModes
     , SIO.readLn
 
     -- * Binary input and output
-    , withBinaryFile
     , openBinaryFile
+    , withBinaryFile
 
       -- ** Opening binary files by inferring the IOMode
-    , withBinaryFile'
     , openBinaryFile'
+    , withBinaryFile'
 
       -- ** Operations on binary handles
     , hSetBinaryMode
@@ -260,6 +260,31 @@ import System.IO.ExplicitIOModes.Unsafe   ( wrap )
 
 -- ** IO Modes
 
+-- | Read only.
+data ReadMode
+
+-- | Write only.
+data WriteMode
+
+-- | Write only by appending.
+data AppendMode
+
+-- | Both read and write.
+data ReadWriteMode
+
+-- | Class of readable IO mode types.
+class ReadModes  ioMode
+
+-- | Class of writable IO mode types.
+class WriteModes ioMode
+
+instance ReadModes ReadMode
+instance ReadModes ReadWriteMode
+
+instance WriteModes WriteMode
+instance WriteModes AppendMode
+instance WriteModes ReadWriteMode
+
 -- | The IOMode GADT which for each constructor specifies the associated IOMode
 -- type.
 --
@@ -317,30 +342,6 @@ instance Show (IOMode ioMode) where
     show AppendMode    = "AppendMode"
     show ReadWriteMode = "ReadWriteMode"
 
--- | Read only.
-data ReadMode
-
--- | Write only.
-data WriteMode
-
--- | Write only by appending.
-data AppendMode
-
--- | Both read and write.
-data ReadWriteMode
-
--- | Class of readable IO mode types.
-class ReadModes  ioMode
-
--- | Class of writable IO mode types.
-class WriteModes ioMode
-
-instance ReadModes ReadMode
-instance ReadModes ReadWriteMode
-
-instance WriteModes WriteMode
-instance WriteModes AppendMode
-instance WriteModes ReadWriteMode
 
 -- ** Standard handles
 
@@ -382,13 +383,13 @@ instance CheckMode ReadWriteMode where checkMode = Tagged $
 
 -- ** Opening files
 
--- | Wraps: @System.IO.'SIO.withFile'@.
-withFile ∷ FilePath → IOMode ioMode → (Handle ioMode → IO α) → IO α
-withFile fp ioMode f = SIO.withFile fp (regularIOMode ioMode) $ f ∘ Handle
-
 -- | Wraps: @System.IO.'SIO.openFile'@.
 openFile ∷ FilePath → IOMode ioMode → IO (Handle ioMode)
 openFile fp = liftM Handle ∘ SIO.openFile fp ∘ regularIOMode
+
+-- | Wraps: @System.IO.'SIO.withFile'@.
+withFile ∷ FilePath → IOMode ioMode → (Handle ioMode → IO α) → IO α
+withFile fp ioMode f = SIO.withFile fp (regularIOMode ioMode) $ f ∘ Handle
 
 -- *** Opening files by inferring the IOMode
 
@@ -566,24 +567,24 @@ hPrint = wrap SIO.hPrint
 -- * Binary input and output
 --------------------------------------------------------------------------------
 
--- | Wraps: @System.IO.'SIO.withBinaryFile'@.
-withBinaryFile ∷ FilePath → IOMode ioMode → (Handle ioMode → IO α) → IO α
-withBinaryFile fp ioMode f = SIO.withBinaryFile fp (regularIOMode ioMode) $ f ∘ Handle
-
 -- | Wraps: @System.IO.'SIO.openBinaryFile'@.
 openBinaryFile ∷ FilePath → IOMode ioMode → IO (Handle ioMode)
 openBinaryFile fp = liftM Handle ∘ SIO.openBinaryFile fp ∘ regularIOMode
 
+-- | Wraps: @System.IO.'SIO.withBinaryFile'@.
+withBinaryFile ∷ FilePath → IOMode ioMode → (Handle ioMode → IO α) → IO α
+withBinaryFile fp ioMode f = SIO.withBinaryFile fp (regularIOMode ioMode) $ f ∘ Handle
+
 
 -- ** Opening binary files by inferring the IOMode
-
--- | Note that: @withBinaryFile' fp = 'withBinaryFile' fp 'mkIOMode'@.
-withBinaryFile' ∷ MkIOMode ioMode ⇒ FilePath → (Handle ioMode → IO α) → IO α
-withBinaryFile' fp = withBinaryFile fp mkIOMode
 
 -- | Note that: @openBinaryFile' fp = 'openBinaryFile' fp 'mkIOMode'@.
 openBinaryFile' ∷ MkIOMode ioMode ⇒ FilePath → IO (Handle ioMode)
 openBinaryFile' fp = openBinaryFile fp mkIOMode
+
+-- | Note that: @withBinaryFile' fp = 'withBinaryFile' fp 'mkIOMode'@.
+withBinaryFile' ∷ MkIOMode ioMode ⇒ FilePath → (Handle ioMode → IO α) → IO α
+withBinaryFile' fp = withBinaryFile fp mkIOMode
 
 
 -- ** Operations on binary handles
