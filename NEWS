@@ -1,0 +1,105 @@
+0.4.1
+
+(Released on: Sat Aug 14 09:20:51 UTC 2010)
+
+* Added mkIOMode overloaded IOMode constructor
+  And added convenience functions:
+  withFile', openFile', withBinaryFile' and openBinaryFile'
+  that open files without explicitly specifying the IOMode.
+  Instead the IOMode is inferred from the type of the resulting Handle
+
+
+0.4.0.1
+
+(Released on: Thu Jun 17 08:05:30 UTC 2010)
+
+* Support tagged-0.1.*
+
+
+0.4
+
+(Released on: Wed Jun 16 09:11:43 UTC 2010)
+
+* Added System.IO.ExplicitIOModes.Unsafe
+
+* Moved the ByteString operations to their own package: explicit-iomodes-bytestring
+
+
+0.3
+
+(Released on: Sun May 2 20:27:29 UTC 2010)
+
+* Updated dependency: base-unicode-symbols >= 0.1.1 && < 0.3
+
+* Renamed the IOMode types
+  R  -> ReadMode
+  W  -> WriteMode
+  A  -> AppendMode
+  RW -> ReadWriteMode
+
+
+0.2
+
+(Released on: Sat Jan 23 14:24:54 UTC 2010)
+
+* Added ByteString support
+
+* Don't export 'regularHandle' anymore
+
+
+
+0.1.5
+
+(Released on: Wed Jan 6 21:39:21 UTC 2010)
+
+* Exported: regularIOMode ∷ IOMode ioMode → System.IO.IOMode
+
+* Added documentation
+
+
+0.1.4
+
+(Released on: Tue Jan 5 23:44:26 UTC 2010)
+
+* Exported the ReadModes and WriteModes classes
+
+* Exported the CheckMode class (but not its method)
+
+
+0.1.3
+
+(Released on: Mon Dec 28 14:20:32 UTC 2009)
+
+* Added new base-4.2 functions:
+  - openTempFileWithDefaultPermissions
+  - openBinaryTempFileWithDefaultPermissions
+  - hSetEncoding
+  - hGetEncoding
+  - hSetNewlineMode
+
+
+0.1.2
+
+(Released on: Wed Dec 23 13:58:42 UTC 2009)
+
+* Exported forgotten 'isEOF'
+
+* Tested with base-4.2
+
+* Internal changes: explicit imports && Unicode syntax
+
+
+0.1.1
+
+(Released on: Tue Dec 15 09:58:32 UTC 2009)
+
+* Added function: regularHandle ∷ Handle → System.IO.Handle
+
+* Documentation fix
+
+
+0.1
+
+(Released on: Mon Dec 14 16:12:30 UTC 2009)
+
+* Initial release
