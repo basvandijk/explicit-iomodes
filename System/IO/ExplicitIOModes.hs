@@ -47,9 +47,11 @@ module System.IO.ExplicitIOModes
     , AppendMode
     , ReadWriteMode
 
+      -- *** Grouping the IOMode types.
     , ReadModes
     , WriteModes
 
+      -- *** A value-level IOMode.
     , IOMode(..)
     , MkIOMode(mkIOMode)
     , regularIOMode
@@ -273,17 +275,27 @@ data AppendMode
 data ReadWriteMode
 
 -- | Class of readable IO mode types.
-class ReadModes  ioMode
+--
+-- Note the super class @ReadModesPrivate@. This type class is not exported by
+-- this module which ensures you can't accidentally make another type (like
+-- 'WriteMode' or 'AppendMode') an instance of 'ReadModes'.
+class ReadModesPrivate ioMode ⇒ ReadModes ioMode
+class ReadModesPrivate ioMode
 
 -- | Class of writable IO mode types.
-class WriteModes ioMode
+--
+-- Note the super class @WriteModesPrivate@. This type class is not exported by
+-- this module which ensures you can't accidentally make another type (like
+-- 'ReadMode') an instance of 'WriteModes'.
+class WriteModesPrivate ioMode ⇒ WriteModes ioMode
+class WriteModesPrivate ioMode
 
-instance ReadModes ReadMode
-instance ReadModes ReadWriteMode
+instance ReadModesPrivate ReadMode;       instance ReadModes ReadMode
+instance ReadModesPrivate ReadWriteMode;  instance ReadModes ReadWriteMode
 
-instance WriteModes WriteMode
-instance WriteModes AppendMode
-instance WriteModes ReadWriteMode
+instance WriteModesPrivate WriteMode;     instance WriteModes WriteMode
+instance WriteModesPrivate AppendMode;    instance WriteModes AppendMode
+instance WriteModesPrivate ReadWriteMode; instance WriteModes ReadWriteMode
 
 -- | The IOMode GADT which for each constructor specifies the associated IOMode
 -- type.
