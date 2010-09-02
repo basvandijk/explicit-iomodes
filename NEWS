@@ -1,3 +1,13 @@
+0.5
+
+(Released on: Wed Sep 1 20:11:13 UTC 2010)
+
+* Add private super classes to ReadModes and WriteModes
+  This prevents users from accidentally defining for example:
+  'instance ReadModes WriteMode'
+  which would defeat the safety guarantees of this package.
+
+
 0.4.1
 
 (Released on: Sat Aug 14 09:20:51 UTC 2010)
