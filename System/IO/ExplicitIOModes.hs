@@ -185,6 +185,9 @@ module System.IO.ExplicitIOModes
     , hGetBuf
 
 #if !defined(__NHC__) && !defined(__HUGS__)
+#if MIN_VERSION_base(4,3,0)
+    , hGetBufSome
+#endif
     , hPutBufNonBlocking
     , hGetBufNonBlocking
 #endif
@@ -233,7 +236,6 @@ import Control.Monad       ( return, (>>=), fail, liftM, liftM2 )
 import Control.Arrow       ( second )
 import Foreign.Ptr         ( Ptr )
 import Data.Eq             ( Eq, (==) )
-import Data.Ord            ( Ord, (<=) )
 import Data.Function       ( ($) )
 import Data.Bool           ( Bool(False, True) )
 import Data.Maybe          ( Maybe(Nothing, Just) )
@@ -329,24 +331,6 @@ instance Eq (IOMode ioMode) where
     AppendMode    == AppendMode    = True
     ReadWriteMode == ReadWriteMode = True
     _             == _             = False
-
-instance Ord (IOMode ioMode) where
-    ReadWriteMode <= ReadWriteMode = True
-    ReadWriteMode <= _             = False
-
-    AppendMode    <= ReadWriteMode = True
-    AppendMode    <= AppendMode    = True
-    AppendMode    <= _             = False
-
-    WriteMode     <= ReadWriteMode = True
-    WriteMode     <= AppendMode    = True
-    WriteMode     <= WriteMode     = True
-    WriteMode     <= _             = False
-
-    ReadMode      <= ReadWriteMode = True
-    ReadMode      <= AppendMode    = True
-    ReadMode      <= WriteMode     = True
-    ReadMode      <= ReadMode      = True
 
 instance Show (IOMode ioMode) where
     show ReadMode      = "ReadMode"
@@ -614,6 +598,13 @@ hGetBuf ∷ ReadModes ioMode ⇒ Handle ioMode → Ptr α → Int → IO Int
 hGetBuf = wrap SIO.hGetBuf
 
 #if !defined(__NHC__) && !defined(__HUGS__)
+
+#if MIN_VERSION_base(4,3,0)
+-- | Wraps: @System.IO.'SIO.hGetBufSome'@.
+hGetBufSome ∷ ReadModes ioMode ⇒ Handle ioMode → Ptr α → Int → IO Int
+hGetBufSome = wrap SIO.hGetBufSome
+#endif
+
 -- | Wraps: @System.IO.'SIO.hPutBufNonBlocking'@.
 hPutBufNonBlocking ∷ WriteModes ioMode ⇒ Handle ioMode → Ptr α → Int → IO Int
 hPutBufNonBlocking = wrap SIO.hPutBufNonBlocking
