@@ -1,3 +1,12 @@
+0.6
+
+(Released on: Thu Oct 21 21:17:54 UTC 2010)
+
+* Tested with GHC-7 and base-4.3
+* Added hGetBufSome (only when configured with base-4.3)
+* Removed Ord instance it gives type errors in GHC-7
+
+
 0.5
 
 (Released on: Wed Sep 1 20:11:13 UTC 2010)
