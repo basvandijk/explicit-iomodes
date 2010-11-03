@@ -232,7 +232,7 @@ module System.IO.ExplicitIOModes
 
 -- from base:
 import Prelude             ( Integer )
-import Control.Monad       ( return, (>>=), fail, liftM, liftM2 )
+import Control.Monad       ( return, liftM, liftM2 )
 import Control.Arrow       ( second )
 import Foreign.Ptr         ( Ptr )
 import Data.Eq             ( Eq, (==) )
@@ -243,6 +243,10 @@ import Data.Int            ( Int )
 import Data.Char           ( Char, String )
 import Text.Show           ( Show, show )
 import System.IO           ( IO, FilePath )
+
+#if __GLASGOW_HASKELL__ < 701
+import Control.Monad       ( (>>=), fail )
+#endif
 
 import qualified System.IO as SIO
 
