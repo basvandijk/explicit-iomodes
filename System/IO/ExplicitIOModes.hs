@@ -244,7 +244,7 @@ import Data.Char           ( Char, String )
 import Text.Show           ( Show, show )
 import System.IO           ( IO, FilePath )
 
-#if __GLASGOW_HASKELL__ < 701
+#if __GLASGOW_HASKELL__ < 700
 import Control.Monad       ( (>>=), fail )
 #endif
 
