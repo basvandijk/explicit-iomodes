@@ -1,3 +1,12 @@
+0.6.0.3
+
+(Released on: Thu Aug 11 22:17:23 UTC 2011)
+
+* Switched from darcs to git on github.
+
+* Support base-4.4 and tested with ghc-7.2.1.
+
+
 0.6.0.2
 
 (Released on: Sat Jan 22 21:45:47 UTC 2011)
