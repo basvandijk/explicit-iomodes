@@ -213,6 +213,9 @@ module System.IO.ExplicitIOModes
     , SIO.utf16, SIO.utf16le, SIO.utf16be
     , SIO.utf32, SIO.utf32le, SIO.utf32be
     , SIO.localeEncoding
+#if MIN_VERSION_base(4,4,0)
+    , SIO.char8
+#endif
     , SIO.mkTextEncoding
 
     -- * Newline conversion
@@ -240,9 +243,15 @@ import Data.Function       ( ($) )
 import Data.Bool           ( Bool(False, True) )
 import Data.Maybe          ( Maybe(Nothing, Just) )
 import Data.Int            ( Int )
-import Data.Char           ( Char, String )
+import Data.Char           ( Char )
 import Text.Show           ( Show, show )
 import System.IO           ( IO, FilePath )
+
+#if MIN_VERSION_base(4,4,0)
+import Data.String         ( String )
+#else
+import Data.Char           ( String )
+#endif
 
 #if __GLASGOW_HASKELL__ < 700
 import Control.Monad       ( (>>=), fail )

@@ -30,7 +30,7 @@ source-repository head
 Library
   GHC-Options: -Wall
 
-  build-depends: base                 >= 4     && < 4.4
+  build-depends: base                 >= 4     && < 4.5
                , base-unicode-symbols >= 0.1.1 && < 0.3
                , tagged               >= 0.0   && < 0.3
   exposed-modules: System.IO.ExplicitIOModes
