@@ -1,4 +1,8 @@
-{-# LANGUAGE NoImplicitPrelude, UnicodeSyntax, DeriveDataTypeable #-}
+{-# LANGUAGE CPP, NoImplicitPrelude, UnicodeSyntax, DeriveDataTypeable #-}
+
+#if __GLASGOW_HASKELL__ >= 704
+{-# LANGUAGE Unsafe #-}
+#endif
 
 module System.IO.ExplicitIOModes.Internal where
 

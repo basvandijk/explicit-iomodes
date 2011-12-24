@@ -1,4 +1,8 @@
-{-# LANGUAGE NoImplicitPrelude, UnicodeSyntax #-}
+{-# LANGUAGE CPP, NoImplicitPrelude, UnicodeSyntax #-}
+
+#if __GLASGOW_HASKELL__ >= 704
+{-# LANGUAGE Unsafe #-}
+#endif
 
 module System.IO.ExplicitIOModes.Unsafe ( regularHandle
                                         , wrap, wrap2

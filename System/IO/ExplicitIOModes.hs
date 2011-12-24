@@ -6,6 +6,10 @@
            , ScopedTypeVariables
   #-}
 
+#if __GLASGOW_HASKELL__ >= 704
+{-# LANGUAGE Trustworthy #-}
+#endif
+
 -------------------------------------------------------------------------------
 -- |
 -- Module      :  System.IO.ExplicitIOModes
@@ -42,14 +46,10 @@ module System.IO.ExplicitIOModes
       -- ** IO Modes
 
       -- | Types that represent the IOMode a 'Handle' can be in.
-    , ReadMode
-    , WriteMode
-    , AppendMode
-    , ReadWriteMode
+    , ReadMode, WriteMode, AppendMode, ReadWriteMode
 
       -- *** Grouping the IOMode types.
-    , ReadModes
-    , WriteModes
+    , ReadModes, WriteModes
 
       -- *** A value-level IOMode.
     , IOMode(..)
@@ -61,9 +61,7 @@ module System.IO.ExplicitIOModes
       -- | These standard handles have concrete IOModes by default which work
       -- for the majority of cases. In the rare occasion that you know these
       -- handles have different IOModes you can 'cast' them.
-    , stdin
-    , stdout
-    , stderr
+    , stdin, stdout, stderr
 
     , cast
     , CheckMode
@@ -669,6 +667,3 @@ hGetEncoding = wrap SIO.hGetEncoding
 hSetNewlineMode ∷ Handle ioMode → SIO.NewlineMode → IO ()
 hSetNewlineMode = wrap SIO.hSetNewlineMode
 #endif
-
-
--- The End ---------------------------------------------------------------------
